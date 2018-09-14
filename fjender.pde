@@ -1,7 +1,8 @@
 class Enemy {
   PVector velocity, location, targetLoccen;
-  float size, speed, enemyRotat, angle;
+  float size, speed, enemyRotat, angle, time;
   PImage imgFjende;
+  boolean corresponding;
   String outputString;
   StringBuilder manipulString;
   void initializeFjende() {
@@ -15,8 +16,8 @@ class Enemy {
         manipulString = new StringBuilder(tempStr);
         outputString = manipulString.toString();
         initializeFjende();
-        location = new PVector(random(0,width),random(-40,-5)); //spawnes mellem 5 og 20 pixels over grænsen
-        targetLoccen = new PVector(0,0);
+        location = new PVector(random(width),random(-40, -5)); //spawnes mellem 5 og 20 pixels over grænsen
+        targetLoccen = new PVector(0, 0);
         navigation();
     }
 
@@ -28,7 +29,7 @@ class Enemy {
 
     void informationProjektil () {
       if (outputString.length() == 0) {
-        for (int i = projectiles.size()-1; i >= 0; i--) {
+        for (int i = projectiles.size() - 1; i >= 0; i--) {
             Projectile projectile = (Projectile) projectiles.get(i);
             targetLoccen = projectile.location;
         }
@@ -37,6 +38,19 @@ class Enemy {
 
     void update() {
         location.add(velocity);
+        if (outputString.length() >= 1 && key == outputString.charAt(0) && spawnCounter <= 60) {
+          velocity.setMag(0);
+          spawnCounter ++;
+        }
+        else {
+          velocity = new PVector(width / 2 - location.x, height - 40 - location.y); //velocity vektoren er en vektor som går fra enemy.location til ship.location
+          velocity.setMag(speed);
+          spawnCounter = 0;
+        }
+        if (outputString.length() >= 1 && key == outputString.charAt(0))
+          corresponding = true;
+        else
+          corresponding = false;
         //println(tan(velocity.y / velocity.x), velocity.heading());
     }
 
@@ -50,13 +64,13 @@ class Enemy {
         translate(location.x,location.y);
         if (size > 4) {
             rotate(enemyRotat);
-            image(imgFjende, 0, 0, 27*size*0.5, 37*size*0.5);
+            image(imgFjende, 0, 0, 27 * size * 0.5, 37 * size * 0.5);
         }
         else {
             fill(0);
             stroke(255,215,0);
-            ellipse(0,0,size*5,size*5);
-            ellipse(0,0,size,size);
+            ellipse(0, 0, size * 5, size * 5);
+            ellipse(0, 0, size, size);
         }
         popMatrix();
         if (outputString.length() >= 1 && key == outputString.charAt(0) /*&& distance */) {
@@ -65,22 +79,21 @@ class Enemy {
             score = score + 1;
         }
         outputString = manipulString.toString();
-        textSize(15);
+        textSize(size * 2 + 8);
+        textAlign(RIGHT);
         fill(255);
         text(outputString,location.x-size*5,location.y-size*5);
+
+        if (outputString.length() == 0)
+          time = time + 1;
     }
 
     Boolean dead() {
-        if (outputString.length() == 0 && location.dist(targetLoccen) <= 30)
+        if (outputString.length() == 0 && (location.dist(targetLoccen) <= 30 || time > 45) || location.y > height)
            return true;
         else
            return false;
     }
-
-    /*boolean corresponding() {
-      if (outputString.length() >= 1 && key == outputString.charAt(0))
-        return true;
-    }*/
 }
 
 void tegnFjende () {
@@ -89,11 +102,29 @@ void tegnFjende () {
     enemy.informationProjektil();
     enemy.update();
     enemy.display();
-    if (enemy.dead())
-        enemies.remove(i);
-    /*if (enemy.location.x < width / 2 + 40 && enemy.location.x > width / 2 - 20 && enemy.location.y < height - 60 && enemy.location.y > height - 20)
-        deads = true;
-    /*if enemy.corresponding
-        add.sortedEnemies(this);*/
+    if (enemy.location.x < width / 2 + 20 && enemy.location.x > width / 2 - 20 && enemy.location.y > height - 60 && enemy.location.y < height - 20)
+        end = true;
+    println(end);
+      if (enemy.dead())
+          //rystKamera.draw();
+          enemies.remove(i);
+    /*if (enemy.corresponding)
+        sortering();*/
   }
 }
+/*void sortering () {
+  int indexFlag = 0;
+  for (Enemy before : enemies) {
+    indexFlag = indexOf(before);
+    for (Enemy inProcess : enemies) {
+      if (before != inProcess) {
+        if (inProcess.distance < before.distance && indexOf(inProcess) > indexFlag && before.corresponding) {
+          int indexinProcess = indexOf(inProcess);
+          int indexbefore = indexOf(before);
+          enemies.set(indexinProcess, before);
+          enemies.set(indexbefore, inProcess);
+        }
+      }
+    }
+  }
+}*/
