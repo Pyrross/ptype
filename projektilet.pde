@@ -37,8 +37,11 @@ void tegnProjektil() {
     Projectile projectile = (Projectile) projectiles.get(i);
     projectile.update();
     projectile.display();
-    if (projectile.dead())
+    if (projectile.dead()) {
+        ramLyd.rewind();
+        ramLyd.play();
         projectiles.remove(i);
+    }
   }
   //println(projectiles.size());
 }
